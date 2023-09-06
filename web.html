@@ -1,0 +1,74 @@
+<!--blogger 페이지 body 태그에 입력한 내용-->
+<br>
+<style>
+  p {text-align: center}
+</style>
+
+<p>
+  <input accept="video/*|image/*" id="fileInput" type="file" onchange="previewFile()" />
+  <input type="button" onclick="detect();" value="Detect"/>
+  <button onclick="download()">Download</button>
+</p>
+
+<a id="a">
+  <div style="text-align: center;">
+    <img id="img" width="90%" src="">
+  </div>
+</a>
+<br>
+
+<script>
+let img = document.getElementById('img');
+
+function previewFile() {
+  img.src = "";
+  let file = document.querySelector('input[type=file]').files[0];
+  let reader = new FileReader();
+  reader.addEventListener(
+    'load', function () {
+      img.src = reader.result;
+    },false
+  );
+  if (file) {
+    reader.readAsDataURL(file);
+  }
+}
+
+function detect(){
+  let parsing = img.src.split(".");
+  let type = parsing[parsing.length-1];
+  if (type == "html") {
+    alert("탐지할 이미지가 없습니다.");
+  } else{
+    fetch('34.64.98.254:8000/detect', {
+      method: 'POST',
+      headers: {
+        'Origin': 'https://javascript.info',
+ 		'Content-Type': 'application/json'
+    },
+    credentials: "include",
+    body: JSON.stringify({
+        'type': type,
+        'data': img.src
+    })
+	}).then(response => response.json())
+      .then(data => {img.src = "data:image/png;base64," + data["image"]})
+      .catch(e => console.log(e));
+  }
+}
+
+function download() {
+  let parsing = img.src.split(".");
+  let type = parsing[parsing.length-1];
+  if (type == "html") {
+    alert("다운로드할 이미지가 없습니다.");
+  } else{
+    let link = document.getElementById('a');
+    link.setAttribute('href', img.src);
+    link.setAttribute('download', 'image.jpg');
+    link.click();
+    link.removeAttribute('href');
+    link.removeAttribute('download');
+  }
+}
+</script>
